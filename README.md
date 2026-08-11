@@ -11,7 +11,7 @@ test cases (positive, negative, business-rule, and security-oriented), full exec
 confirmed defect, and a final closure report comparing planned vs. actual outcomes.
 
 Portfolio presentation (narrative, scope, and links to all documents below) is hosted on Notion:
-**[Add your Notion page link here]**
+[View the full project on Notion](https://damilareakanni.notion.site/Damilare-A-014433797aa68349805181612bc6e1d9?source=copy_link)
 
 ## API Under Test
 
