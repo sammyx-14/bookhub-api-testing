@@ -1,6 +1,8 @@
 # api/account.py
 # The "API layer" for the Account endpoints (/Account/v1/...).
 
+from api.headers import bearer
+
 
 class AccountAPI:
     def __init__(self, request):
@@ -30,12 +32,9 @@ class AccountAPI:
 
     def get_user(self, user_id, token=None):
         # GET /Account/v1/User/{UUID}  ->  details of one user. Needs that user's token.
-        headers = {"Authorization": f"Bearer {token}"} if token else {}
-        return self.request.get(f"/Account/v1/User/{user_id}", headers=headers)
+        return self.request.get(f"/Account/v1/User/{user_id}", headers=bearer(token))
 
-    def delete_user(self, user_id, token):
+    def delete_user(self, user_id, token=None):
         # DELETE /Account/v1/User/{UUID}  ->  needs the user's own token.
-        return self.request.delete(
-            f"/Account/v1/User/{user_id}",
-            headers={"Authorization": f"Bearer {token}"},
-        )
+        # Leave the token out to test the "no token" case.
+        return self.request.delete(f"/Account/v1/User/{user_id}", headers=bearer(token))

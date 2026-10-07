@@ -9,7 +9,7 @@ from playwright.sync_api import Playwright
 
 from api.account import AccountAPI
 from api.bookstore import BookStoreAPI
-from config import BASE_URL, TEST_PASSWORD
+from config import BASE_URL, ISBN_A, TEST_PASSWORD
 from helpers import unique_username
 
 
@@ -21,12 +21,28 @@ class User:
     password: str
 
 
-def delete_user_quietly(account_api, user_id, user_name, password):
+def create_test_user(account_api):
+    # Register a brand-new user with a name no other test run will share.
+    user_name = unique_username()
+    response = account_api.create_user(user_name, TEST_PASSWORD)
+    assert response.status == 201, f"Could not create test user: {response.status} {response.text()}"
+    return User(
+        user_id=response.json()["userID"],
+        user_name=user_name,
+        password=TEST_PASSWORD,
+    )
+
+
+def delete_user_if_exists(account_api, user_id, user_name, password):
     # Log in with a fresh token, then delete the user.
-    # If the user is already gone, no token comes back and we simply do nothing.
+    # If the user is already gone (a test deleted it), no token comes back and we skip.
     token = account_api.generate_token(user_name, password).json().get("token")
     if token:
-        account_api.delete_user(user_id, token)
+        response = account_api.delete_user(user_id, token)
+        # A failed cleanup must be visible, never silent.
+        assert response.status == 204, (
+            f"Cleanup failed for {user_name}: {response.status} {response.text()}"
+        )
 
 
 @pytest.fixture
@@ -49,20 +65,23 @@ def account_api(api_request):
 
 @pytest.fixture
 def new_user(account_api):
-    # SETUP: create a brand-new user no other test run will share.
-    user_name = unique_username()
-    response = account_api.create_user(user_name, TEST_PASSWORD)
-    assert response.status == 201, f"Could not create test user: {response.status} {response.text()}"
-    user = User(
-        user_id=response.json()["userID"],
-        user_name=user_name,
-        password=TEST_PASSWORD,
-    )
+    # SETUP: create a brand-new user.
+    user = create_test_user(account_api)
 
     yield user
 
     # TEARDOWN: runs after the test, even if the test failed.
-    delete_user_quietly(account_api, user.user_id, user.user_name, user.password)
+    delete_user_if_exists(account_api, user.user_id, user.user_name, user.password)
+
+
+@pytest.fixture
+def other_user(account_api):
+    # A SECOND, independent user, for tests that involve two people (TC-021).
+    user = create_test_user(account_api)
+
+    yield user
+
+    delete_user_if_exists(account_api, user.user_id, user.user_name, user.password)
 
 
 @pytest.fixture
@@ -72,6 +91,15 @@ def auth_token(account_api, new_user):
     token = response.json().get("token")
     assert token, f"Could not get a token for the test user: {response.text()}"
     return token
+
+
+@pytest.fixture
+def book_in_collection(books_api, new_user, auth_token):
+    # Puts one known book (ISBN_A) into the test user's collection and returns its ISBN.
+    # No teardown needed: deleting the user also removes their collection.
+    response = books_api.add_books(new_user.user_id, [ISBN_A], auth_token)
+    assert response.status == 201, f"Could not add the starting book: {response.status} {response.text()}"
+    return ISBN_A
 
 
 @pytest.fixture
@@ -86,4 +114,4 @@ def cleanup(account_api):
     yield register
 
     for user_id, user_name, password in registered:
-        delete_user_quietly(account_api, user_id, user_name, password)
+        delete_user_if_exists(account_api, user_id, user_name, password)
