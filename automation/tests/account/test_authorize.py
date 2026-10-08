@@ -3,6 +3,7 @@
 
 from config import TEST_PASSWORD
 from helpers import unique_username
+import pytest
 
 
 def test_tc008_authorize_with_valid_credentials(account_api, new_user, auth_token):
@@ -17,6 +18,8 @@ def test_tc008_authorize_with_valid_credentials(account_api, new_user, auth_toke
     assert response.json() is True
 
 
+@pytest.mark.negative
+@pytest.mark.security
 def test_tc009_authorize_non_existent_user_fails(account_api):
     """TC-009: Verify authorization fails for a non-existent user."""
     # A freshly generated name cannot belong to any registered user.
@@ -25,6 +28,8 @@ def test_tc009_authorize_non_existent_user_fails(account_api):
     assert response.status == 404
 
 
+@pytest.mark.negative
+@pytest.mark.security
 def test_tc010_authorize_wrong_password_fails(account_api, new_user):
     """TC-010: Verify authorization fails for an existing user with the wrong password."""
     response = account_api.authorize(new_user.user_name, "Wrong@Pass1")

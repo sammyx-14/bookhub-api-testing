@@ -1,6 +1,7 @@
 # tests/bookstore/test_delete_book.py
 # Tests for DELETE /BookStore/v1/Book (Delete Book from Collection): TC-025 to TC-026.
 
+import pytest
 from config import ISBN_A, ISBN_B
 from helpers import isbns_in
 
@@ -18,6 +19,7 @@ def test_tc025_delete_book_in_collection(
     assert isbns_in(user) == []
 
 
+@pytest.mark.negative
 def test_tc026_delete_book_not_in_collection_is_rejected(
     account_api, books_api, new_user, auth_token, book_in_collection
 ):

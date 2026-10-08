@@ -1,7 +1,10 @@
 # tests/account/test_delete_user.py
 # Tests for DELETE /Account/v1/User/{UUID} (Delete User): TC-029 to TC-030.
+import pytest
 
 
+@pytest.mark.negative
+@pytest.mark.security
 def test_tc029_delete_user_without_token_is_rejected(account_api, new_user, auth_token):
     """TC-029: Verify the request fails when no token is attached."""
     # No token is passed to delete_user, so no Authorization header is sent.

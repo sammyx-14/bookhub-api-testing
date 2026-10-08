@@ -1,5 +1,6 @@
 # tests/account/test_get_user.py
 # Tests for GET /Account/v1/User/{UUID} (Get User): TC-011 to TC-013.
+import pytest
 
 
 def test_tc011_get_user_with_valid_uuid_and_token(account_api, new_user, auth_token):
@@ -15,6 +16,8 @@ def test_tc011_get_user_with_valid_uuid_and_token(account_api, new_user, auth_to
     assert body["books"] == []
 
 
+@pytest.mark.negative
+@pytest.mark.security
 def test_tc012_get_user_without_token_is_rejected(account_api, new_user):
     """TC-012: Verify the request fails when no token is attached."""
     response = account_api.get_user(new_user.user_id)  # no token sent
@@ -22,6 +25,7 @@ def test_tc012_get_user_without_token_is_rejected(account_api, new_user):
     assert response.status == 401
 
 
+@pytest.mark.negative
 def test_tc013_get_user_with_non_existent_uuid_is_rejected(account_api, auth_token):
     """TC-013: Verify the request fails for a non-existent UUID."""
     # An all-zero UUID is well-formed but cannot belong to any registered user.

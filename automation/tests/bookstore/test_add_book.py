@@ -1,6 +1,7 @@
 # tests/bookstore/test_add_book.py
 # Tests for POST /BookStore/v1/Books (Add Book to Collection): TC-017 to TC-021.
 
+import pytest
 from config import ISBN_A, ISBN_B, ISBN_INVALID
 from helpers import isbns_in
 
@@ -15,9 +16,11 @@ def test_tc017_add_book_with_valid_isbn(account_api, books_api, new_user, auth_t
     assert isbns_in(user) == [ISBN_A]
 
 
+@pytest.mark.negative
 def test_tc018_add_book_with_invalid_isbn_is_rejected(account_api, books_api, new_user, auth_token):
     """TC-018: Verify the request fails when the ISBN is invalid."""
-    response = books_api.add_books(new_user.user_id, [ISBN_INVALID], auth_token)
+    response = books_api.add_books(
+        new_user.user_id, [ISBN_INVALID], auth_token)
 
     assert response.status == 400
     # Follow-up read: nothing was added.
@@ -25,6 +28,8 @@ def test_tc018_add_book_with_invalid_isbn_is_rejected(account_api, books_api, ne
     assert isbns_in(user) == []
 
 
+@pytest.mark.negative
+@pytest.mark.security
 def test_tc019_add_book_without_token_is_rejected(account_api, books_api, new_user, auth_token):
     """TC-019: Verify the request fails when no token is attached."""
     # No token is passed to add_books, so no Authorization header is sent.
@@ -36,12 +41,14 @@ def test_tc019_add_book_without_token_is_rejected(account_api, books_api, new_us
     assert isbns_in(user) == []
 
 
+@pytest.mark.negative
 def test_tc020_add_duplicate_isbn_is_rejected(
     account_api, books_api, new_user, auth_token, book_in_collection
 ):
     """TC-020: Verify the request fails when the ISBN is already in the user's collection."""
     # `book_in_collection` has already put ISBN_A into this user's collection.
-    response = books_api.add_books(new_user.user_id, [book_in_collection], auth_token)
+    response = books_api.add_books(
+        new_user.user_id, [book_in_collection], auth_token)
 
     assert response.status == 400
     assert response.json()["code"] == "1210"
@@ -50,6 +57,8 @@ def test_tc020_add_duplicate_isbn_is_rejected(
     assert isbns_in(user) == [ISBN_A]
 
 
+@pytest.mark.negative
+@pytest.mark.security
 def test_tc021_cannot_add_book_to_another_users_collection(
     account_api, books_api, new_user, auth_token, other_user
 ):
@@ -59,6 +68,7 @@ def test_tc021_cannot_add_book_to_another_users_collection(
 
     assert response.status == 401
     # Follow-up read as user B: B's collection is untouched.
-    other_token = account_api.generate_token(other_user.user_name, other_user.password).json()["token"]
+    other_token = account_api.generate_token(
+        other_user.user_name, other_user.password).json()["token"]
     other = account_api.get_user(other_user.user_id, other_token).json()
     assert isbns_in(other) == []

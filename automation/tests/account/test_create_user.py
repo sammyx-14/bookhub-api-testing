@@ -22,6 +22,7 @@ def test_tc001_register_with_valid_credentials(account_api, cleanup):
     assert "password" not in body
 
 
+@pytest.mark.negative
 def test_tc002_register_without_password_is_rejected(account_api):
     """TC-002: Verify registration fails when the password field is missing."""
     response = account_api.create_user(unique_username())  # no password sent
@@ -32,6 +33,7 @@ def test_tc002_register_without_password_is_rejected(account_api):
     assert body["message"]  # a non-empty error message is returned
 
 
+@pytest.mark.negative
 def test_tc003_register_with_existing_username_is_rejected(account_api, new_user):
     """TC-003: Verify registration fails when the username already exists."""
     response = account_api.create_user(new_user.user_name, TEST_PASSWORD)
@@ -52,6 +54,7 @@ WEAK_PASSWORDS = [
 ]
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize("password", WEAK_PASSWORDS)
 def test_tc004_register_with_weak_password_is_rejected(account_api, password):
     """TC-004: Verify registration fails when the password breaks the password policy."""
