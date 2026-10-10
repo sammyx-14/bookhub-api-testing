@@ -1,0 +1,54 @@
+name: API tests
+
+on:
+  push:
+    branches: [automation]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: automation/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the suite in shuffled order
+        run: pytest -p randomly
+
+      - name: Set up Node (for the Allure report)
+        if: always()
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build the Allure report
+        if: always()
+        run: npx --yes allure generate reports/allure-results -o reports/allure-report
+
+      - name: Upload the Allure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: automation/reports/allure-report
+
+      - name: Upload the raw results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: automation/reports/allure-results
