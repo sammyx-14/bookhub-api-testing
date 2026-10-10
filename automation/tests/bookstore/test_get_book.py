@@ -3,6 +3,7 @@
 
 import pytest
 from config import ISBN_A, ISBN_INVALID
+from schemas import BOOK, assert_schema
 
 
 def test_tc015_get_book_with_valid_isbn(books_api):
@@ -11,6 +12,7 @@ def test_tc015_get_book_with_valid_isbn(books_api):
 
     assert response.status == 200
     body = response.json()
+    assert_schema(body, BOOK)
     assert body["isbn"] == ISBN_A
     assert body["title"] == "Git Pocket Guide"
 

@@ -1,4 +1,5 @@
 # tests/bookstore/test_get_all_books.py
+from schemas import GET_ALL_BOOKS, assert_schema
 
 
 def test_tc014_get_all_books_returns_catalogue(books_api):
@@ -10,6 +11,7 @@ def test_tc014_get_all_books_returns_catalogue(books_api):
     assert response.status == 200
 
     body = response.json()
+    assert_schema(body, GET_ALL_BOOKS)
 
     # Assert: the catalogue is not empty.
     assert len(body["books"]) > 0

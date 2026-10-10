@@ -5,6 +5,7 @@ import pytest
 
 from config import TEST_PASSWORD
 from helpers import unique_username
+from schemas import CREATE_USER, assert_schema
 
 
 def test_tc001_register_with_valid_credentials(account_api, cleanup):
@@ -20,6 +21,7 @@ def test_tc001_register_with_valid_credentials(account_api, cleanup):
     cleanup(body["userID"], user_name, TEST_PASSWORD)
     assert body["username"] == user_name
     assert "password" not in body
+    assert_schema(body, CREATE_USER)
 
 
 @pytest.mark.negative

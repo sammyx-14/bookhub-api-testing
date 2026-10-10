@@ -3,7 +3,7 @@
 # everything defined in it available to every test automatically.
 
 from dataclasses import dataclass
-
+import allure
 import pytest
 from playwright.sync_api import Playwright
 
@@ -71,7 +71,8 @@ def new_user(account_api):
     yield user
 
     # TEARDOWN: runs after the test, even if the test failed.
-    delete_user_if_exists(account_api, user.user_id, user.user_name, user.password)
+    delete_user_if_exists(account_api, user.user_id,
+                          user.user_name, user.password)
 
 
 @pytest.fixture
@@ -81,13 +82,15 @@ def other_user(account_api):
 
     yield user
 
-    delete_user_if_exists(account_api, user.user_id, user.user_name, user.password)
+    delete_user_if_exists(account_api, user.user_id,
+                          user.user_name, user.password)
 
 
 @pytest.fixture
 def auth_token(account_api, new_user):
     # A valid token for the test user from `new_user`.
-    response = account_api.generate_token(new_user.user_name, new_user.password)
+    response = account_api.generate_token(
+        new_user.user_name, new_user.password)
     token = response.json().get("token")
     assert token, f"Could not get a token for the test user: {response.text()}"
     return token
@@ -115,3 +118,27 @@ def cleanup(account_api):
 
     for user_id, user_name, password in registered:
         delete_user_if_exists(account_api, user_id, user_name, password)
+
+
+# --- Allure labelling -------------------------------------------------------
+# One hook that labels every test in the report, so the 37 tests need no
+# Allure decorators of their own. It reads the markers we already attach.
+
+
+def pytest_collection_modifyitems(items):
+    # pytest calls this once, after it has found all the tests.
+    for item in items:
+        # Feature: from the file name, e.g. test_add_book.py -> "Add Book".
+        file_stem = item.path.stem.removeprefix("test_")
+        feature = file_stem.replace("_", " ").title()
+        item.add_marker(allure.feature(feature))
+
+        # Severity: from the markers the test already carries.
+        if item.get_closest_marker("e2e"):
+            severity = allure.severity_level.BLOCKER
+        elif item.get_closest_marker("security"):
+            severity = allure.severity_level.CRITICAL
+        else:
+            severity = allure.severity_level.NORMAL
+        item.add_marker(allure.severity(severity))
+

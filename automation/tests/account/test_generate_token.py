@@ -4,6 +4,7 @@
 import base64
 import json
 import pytest
+from schemas import TOKEN, assert_schema
 
 
 def decode_jwt_payload(token):
@@ -22,6 +23,7 @@ def test_tc005_generate_token_with_valid_credentials(account_api, new_user):
 
     assert response.status == 200
     body = response.json()
+    assert_schema(body, TOKEN)
     assert body["token"]
     assert body["expires"]
     assert body["status"] == "Success"
