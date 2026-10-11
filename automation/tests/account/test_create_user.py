@@ -67,8 +67,7 @@ def test_tc004_register_with_weak_password_is_rejected(account_api, password):
 
 
 def test_tc004_boundary_eight_character_password_is_accepted(account_api, cleanup):
-    """TC-004 boundary pair: 7 characters is rejected above, so a compliant
-    8-character password must be accepted."""
+    """TC-004: Verify registration succeeds with a password of exactly 8 characters (boundary)."""
     user_name = unique_username()
     password = "Abcdef1!"
 

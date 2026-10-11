@@ -7,8 +7,7 @@ from helpers import unique_username, isbns_in
 
 @pytest.mark.e2e
 def test_e2e001_full_user_lifecycle(account_api, books_api, cleanup):
-    """E2E-001: Verify the whole journey works in sequence: register, get a token,
-    add a book, replace it, delete it, then delete the user."""
+    """E2E-001: Verify the full user journey: register, token, add, replace, delete book, delete user."""
     user_name = unique_username()
 
     # Stage 1: register a new user.

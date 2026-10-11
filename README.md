@@ -57,6 +57,15 @@ contains the user's plaintext password in its (unencrypted, base64-encoded) payl
 
 Full breakdown in [`execution/Test-Closure-Report.md`](execution/Test-Closure-Report.md).
 
+## Test Automation
+
+The 30 manual test cases are also automated with Python, pytest and Playwright's API client, in the [`automation/`](automation/) folder.
+
+- **Traceability:** every test case ID is mapped to its test function and file in [`automation/TRACEABILITY.md`](automation/TRACEABILITY.md). The table is generated from the code by `automation/make_traceability.py`.
+- **Independence:** each test creates its own user and cleans up after itself, so the suite passes in any order.
+- **CI:** GitHub Actions runs the suite on every push to the `automation` branch, in shuffled order, and publishes an Allure report as a downloadable artifact.
+- **One expected failure:** TC-007 is marked as an expected failure because it documents DEF-001 (the JWT payload exposes the plaintext password).
+
 ## Tools
 
 Postman (collection design, environment variables, request chaining, automated assertions), Swagger UI
