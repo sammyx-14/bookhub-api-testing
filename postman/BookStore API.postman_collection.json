@@ -8,7 +8,7 @@
   },
   "item": [
     {
-      "name": "Create User",
+      "name": "TC-001 | Create User | valid registration",
       "event": [
         {
           "listen": "test",
@@ -78,7 +78,178 @@
       "response": []
     },
     {
-      "name": "Generate Token",
+      "name": "TC-002 | Create User | missing password",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "pm.test(\"Error code is 1200\", function () {",
+              "    pm.expect(pm.response.json().code).to.eql(\"1200\");",
+              "});",
+              "pm.test(\"Error message returned\", function () {",
+              "    pm.expect(pm.response.json().message).to.be.a(\"string\").and.not.empty;",
+              "});"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userName\": \"qa_missing_pw_001\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-003 | Create User | duplicate username",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 406\", function () {",
+              "    pm.response.to.have.status(406);",
+              "});",
+              "pm.test(\"Error message returned\", function () {",
+              "    pm.expect(pm.response.json().message).to.be.a(\"string\").and.not.empty;",
+              "});"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userName\": \"{{userName}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-004 | Create User | weak password rejected",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "pm.test(\"Error code is 1300\", function () {",
+              "    pm.expect(pm.response.json().code).to.eql(\"1300\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userName\": \"qa_weakpw_7391\",\n  \"password\": \"abc\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-005 | Generate Token | valid credentials",
       "event": [
         {
           "listen": "test",
@@ -132,47 +303,45 @@
       "response": []
     },
     {
-      "name": "Get User",
+      "name": "TC-006 | Generate Token | wrong password",
       "event": [
         {
-          "listen": "test",
           "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test(\"Status code is 200\", function () {",
               "    pm.response.to.have.status(200);",
               "});",
-              "",
               "const jsonData = pm.response.json();",
-              "",
-              "pm.test(\"userId matches created user\", function () {",
-              "    pm.expect(jsonData.userId).to.eql(pm.environment.get(\"userId\"));",
+              "pm.test(\"Status field indicates failure\", function () {",
+              "    pm.expect(jsonData.status).to.eql(\"Failed\");",
+              "});",
+              "pm.test(\"No token is issued\", function () {",
+              "    pm.expect(jsonData.token).to.eql(null);",
               "});"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
+            ]
+          },
+          "listen": "test"
         }
       ],
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
       "request": {
         "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
-            }
-          ]
+          "type": "noauth"
         },
-        "method": "GET",
+        "method": "POST",
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "",
+          "raw": "{\n  \"userName\": \"{{userName}}\",\n  \"password\": \"WrongPass1\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -180,22 +349,87 @@
           }
         },
         "url": {
-          "raw": "{{baseUrl}}/Account/v1/User/{{userId}}",
+          "raw": "{{baseUrl}}/Account/v1/GenerateToken",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "Account",
             "v1",
-            "User",
-            "{{userId}}"
+            "GenerateToken"
           ]
         }
       },
       "response": []
     },
     {
-      "name": "User Authorization",
+      "name": "TC-007 | Generate Token | JWT payload excludes password",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const jsonData = pm.response.json();",
+              "pm.test(\"A token was issued\", function () {",
+              "    pm.expect(jsonData.token).to.be.a(\"string\");",
+              "});",
+              "// The API invalidates a user's previous token when a new one is issued,",
+              "// so keep the newest token for the requests that follow.",
+              "if (jsonData.token) {",
+              "    pm.environment.set(\"token\", jsonData.token);",
+              "}",
+              "let b64 = jsonData.token.split(\".\")[1].replace(/-/g, \"+\").replace(/_/g, \"/\");",
+              "while (b64.length % 4) { b64 += \"=\"; }",
+              "const decoded = JSON.parse(atob(b64));",
+              "// Open defect DEF-001: this assertion fails until the API stops putting the password in the token.",
+              "pm.test(\"JWT payload does not contain a password\", function () {",
+              "    pm.expect(decoded).to.not.have.property(\"password\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userName\": \"{{userName}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/GenerateToken",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "GenerateToken"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-008 | Authorize | valid credentials",
       "event": [
         {
           "listen": "test",
@@ -241,7 +475,7 @@
       "response": []
     },
     {
-      "name": "Authorize - TC-008",
+      "name": "TC-009 | Authorize | non-existent user",
       "event": [
         {
           "listen": "test",
@@ -284,19 +518,133 @@
       "response": []
     },
     {
-      "name": "TC-010 — Get User without a token",
+      "name": "TC-010 | Authorize | wrong password for existing user",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404 (same as a non-existent user)\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "pm.test(\"Authorization does not succeed (response is not true)\", function () {",
+              "    pm.expect(pm.response.json()).to.not.eql(true);",
+              "});"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userName\": \"{{userName}}\",\n  \"password\": \"WrongPass1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/Authorized",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "Authorized"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-011 | Get User | valid UUID and token",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "const jsonData = pm.response.json();",
+              "pm.test(\"userId matches created user\", function () {",
+              "    pm.expect(jsonData.userId).to.eql(pm.environment.get(\"userId\"));",
+              "});",
+              "pm.test(\"books is empty for a newly created user\", function () {",
+              "    pm.expect(jsonData.books).to.be.an(\"array\").that.is.empty;",
+              "});"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-012 | Get User | no token",
       "event": [
         {
           "listen": "test",
           "script": {
-            "exec": [
-              "pm.test(\"Status code is 401\", function () {",
-              "    pm.response.to.have.status(401);",
-              "});"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});"
+            ]
           }
         }
       ],
@@ -319,20 +667,17 @@
       "response": []
     },
     {
-      "name": "TC-011 — Get User with a non-existent UUID",
+      "name": "TC-013 | Get User | non-existent UUID",
       "event": [
         {
           "listen": "test",
           "script": {
-            "exec": [
-              "pm.test(\"Status code is 401 (per Swagger)\", function () {",
-              "    pm.response.to.have.status(401);",
-              "});",
-              ""
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ]
           }
         }
       ],
@@ -365,7 +710,7 @@
       "response": []
     },
     {
-      "name": "Get All Books",
+      "name": "TC-014 | Get All Books | catalogue returned",
       "event": [
         {
           "listen": "test",
@@ -410,7 +755,7 @@
       "response": []
     },
     {
-      "name": "Get Single Book",
+      "name": "TC-015 | Get Book | valid ISBN",
       "event": [
         {
           "listen": "test",
@@ -457,7 +802,7 @@
       "response": []
     },
     {
-      "name": "Get Book with Invalid ISBN",
+      "name": "TC-016 | Get Book | invalid ISBN",
       "event": [
         {
           "listen": "test",
@@ -497,32 +842,27 @@
       "response": []
     },
     {
-      "name": "Add Book to Collection",
+      "name": "TC-017 | Add Book | valid ISBN",
       "event": [
         {
-          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          },
+          "listen": "prerequest"
+        },
+        {
           "script": {
             "exec": [
               "pm.test(\"Status code is 201\", function () {",
               "    pm.response.to.have.status(201);",
-              "});",
-              ""
+              "});"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        },
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "console.log(\"Token at this point:\", pm.environment.get(\"token\"));"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
+            "type": "text/javascript"
+          },
+          "listen": "test"
         }
       ],
       "request": {
@@ -562,7 +902,23 @@
       "response": []
     },
     {
-      "name": "Get User",
+      "name": "Verify (TC-017) | Get User | book present",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection contains 9781449325862\", function () {",
+              "    pm.expect(pm.response.json().books.map(b => b.isbn)).to.include(\"9781449325862\");",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "auth": {
           "type": "bearer",
@@ -592,7 +948,7 @@
       "response": []
     },
     {
-      "name": "Add Book - TC-016",
+      "name": "TC-018 | Add Book | invalid ISBN",
       "event": [
         {
           "listen": "test",
@@ -645,19 +1001,15 @@
       "response": []
     },
     {
-      "name": "TC-017 — Add Book without a token",
+      "name": "TC-019 | Add Book | no token",
       "event": [
         {
           "listen": "test",
           "script": {
-            "exec": [
-              "pm.test(\"Status code is 401\", function () {",
-              "    pm.response.to.have.status(401);",
-              "});"
-            ],
             "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});"
+            ]
           }
         }
       ],
@@ -688,7 +1040,7 @@
       "response": []
     },
     {
-      "name": "Add a book already in the collection (duplicate ISBN)",
+      "name": "TC-020 | Add Book | duplicate ISBN",
       "event": [
         {
           "listen": "test",
@@ -746,7 +1098,379 @@
       "response": []
     },
     {
-      "name": "Replace Book with a valid new ISBN",
+      "name": "Verify (TC-018, TC-019, TC-020) | Get User | collection unchanged",
+      "event": [
+        {
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection contains 9781449325862\", function () {",
+              "    pm.expect(pm.response.json().books.map(b => b.isbn)).to.include(\"9781449325862\");",
+              "});",
+              "pm.test(\"Collection still holds exactly one book\", function () {",
+              "    pm.expect(pm.response.json().books).to.have.length(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          },
+          "listen": "test"
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Setup (TC-021) | Create User | second user",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"userName2\", \"qatester2_\" + Math.floor(Math.random() * 1000000));"
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.environment.set(\"userId2\", pm.response.json().userID);"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userName\": \"{{userName2}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Setup (TC-021) | Generate Token | second user",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "const jsonData = pm.response.json();",
+              "pm.test(\"Response contains token\", function () {",
+              "    pm.expect(jsonData).to.have.property(\"token\");",
+              "});",
+              "if (jsonData.token) {",
+              "    pm.environment.set(\"token2\", jsonData.token);",
+              "}"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userName\": \"{{userName2}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/GenerateToken",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "GenerateToken"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-021 | Add Book | user A's token with user B's ID",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Cross-user request is rejected (status 401)\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId2}}\",\n  \"collectionOfIsbns\": [\n    {\n      \"isbn\": \"9781449325862\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/BookStore/v1/Books",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "BookStore",
+            "v1",
+            "Books"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify (TC-021) | Get User | user B's collection unchanged",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection is empty\", function () {",
+              "    pm.expect(pm.response.json().books).to.be.an(\"array\").that.is.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token2}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId2}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId2}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Cleanup (TC-021) | Delete User | second user",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          },
+          "listen": "prerequest"
+        },
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          },
+          "listen": "test"
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token2}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId2}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId2}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-022 | Replace Book | valid new ISBN",
       "event": [
         {
           "listen": "test",
@@ -800,7 +1524,77 @@
       "response": []
     },
     {
-      "name": "Replace Book with an invalid new ISBN",
+      "name": "Verify (TC-022) | Get User | ISBN replaced",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection contains 9781449331818\", function () {",
+              "    pm.expect(pm.response.json().books.map(b => b.isbn)).to.include(\"9781449331818\");",
+              "});",
+              "pm.test(\"Collection does not contain 9781449325862\", function () {",
+              "    pm.expect(pm.response.json().books.map(b => b.isbn)).to.not.include(\"9781449325862\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-023 | Replace Book | invalid new ISBN",
       "event": [
         {
           "listen": "test",
@@ -854,7 +1648,7 @@
       "response": []
     },
     {
-      "name": "Replace a book that isn't in the user's collection",
+      "name": "TC-024 | Replace Book | ISBN not in collection",
       "event": [
         {
           "listen": "test",
@@ -913,7 +1707,77 @@
       "response": []
     },
     {
-      "name": "Delete a book that IS in the collectio",
+      "name": "Verify (TC-023, TC-024) | Get User | collection unchanged",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection contains 9781449331818\", function () {",
+              "    pm.expect(pm.response.json().books.map(b => b.isbn)).to.include(\"9781449331818\");",
+              "});",
+              "pm.test(\"Collection still holds exactly one book\", function () {",
+              "    pm.expect(pm.response.json().books).to.have.length(1);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-025 | Delete Book | book in collection",
       "event": [
         {
           "listen": "test",
@@ -966,7 +1830,23 @@
       "response": []
     },
     {
-      "name": "Get User",
+      "name": "Verify (TC-025) | Get User | book gone",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection is empty\", function () {",
+              "    pm.expect(pm.response.json().books).to.be.an(\"array\").that.is.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "auth": {
           "type": "bearer",
@@ -996,7 +1876,7 @@
       "response": []
     },
     {
-      "name": "Delete a book that is NOT in the collection",
+      "name": "TC-026 | Delete Book | book not in collection",
       "event": [
         {
           "listen": "test",
@@ -1049,7 +1929,7 @@
       "response": []
     },
     {
-      "name": "Add Book to Collection",
+      "name": "Setup (TC-027, TC-028) | Add Book | prepare collection",
       "event": [
         {
           "listen": "test",
@@ -1103,7 +1983,105 @@
       "response": []
     },
     {
-      "name": "Delete All Books",
+      "name": "TC-027 | Delete All Books | no token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/BookStore/v1/Books?UserId={{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "BookStore",
+            "v1",
+            "Books"
+          ],
+          "query": [
+            {
+              "key": "UserId",
+              "value": "{{userId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify (TC-027) | Get User | collection unchanged",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection contains 9781449325862\", function () {",
+              "    pm.expect(pm.response.json().books.map(b => b.isbn)).to.include(\"9781449325862\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-028 | Delete All Books | valid token",
       "event": [
         {
           "listen": "test",
@@ -1153,7 +2131,23 @@
       "response": []
     },
     {
-      "name": "Get User",
+      "name": "Verify (TC-028) | Get User | collection empty",
+      "event": [
+        {
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Collection is empty\", function () {",
+              "    pm.expect(pm.response.json().books).to.be.an(\"array\").that.is.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          },
+          "listen": "test"
+        }
+      ],
       "request": {
         "auth": {
           "type": "bearer",
@@ -1183,50 +2177,7 @@
       "response": []
     },
     {
-      "name": "Delete All Books without a token",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 401\", function () {",
-              "    pm.response.to.have.status(401);",
-              "});"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/BookStore/v1/Books?UserId={{userId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "BookStore",
-            "v1",
-            "Books"
-          ],
-          "query": [
-            {
-              "key": "UserId",
-              "value": "{{userId}}"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Delete User without valid token",
+      "name": "TC-029 | Delete User | no token",
       "event": [
         {
           "listen": "test",
@@ -1261,20 +2212,73 @@
       "response": []
     },
     {
-      "name": "Delete User with valid token",
+      "name": "Verify (TC-029) | Get User | user still exists",
       "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"userId matches\", function () {",
+              "    pm.expect(pm.response.json().userId).to.eql(pm.environment.get(\"userId\"));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/Account/v1/User/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Account",
+            "v1",
+            "User",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC-030 | Delete User | valid token",
+      "event": [
+        {
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {",
               "    pm.response.to.have.status(204);",
               "});"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
+            ]
+          },
+          "listen": "test"
         }
       ],
       "request": {
@@ -1306,7 +2310,20 @@
       "response": []
     },
     {
-      "name": "Get User",
+      "name": "Verify (TC-030) | Get User | user gone",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request fails with 401 - user no longer exists\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "auth": {
           "type": "bearer",
