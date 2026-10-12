@@ -64,7 +64,7 @@ Expected result: 37 tests collected, 36 passed and 1 expected failure. TC-007 is
 
 ## Continuous integration
 
-GitHub Actions runs the suite on every push to the `automation` branch, in random order, and publishes the Allure report as a downloadable artifact. See the **Actions** tab.
+GitHub Actions runs the suite on every push to the `main` branch, in random order, and publishes the Allure report as a downloadable artifact. See the **Actions** tab.
 
 ## Credentials
 
