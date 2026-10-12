@@ -34,7 +34,7 @@ lines = [
     "# Traceability: test case ID to automated test",
     "",
     "Generated from the test code by `make_traceability.py`. Each row links a test",
-    "case ID (as used in the manual Test Case Suite) to the pytest function that checks it.",
+    "case ID (as used in the Test Cases document) to the pytest function that checks it.",
     "",
     "| ID | What it verifies | Test function | File | Markers |",
     "|---|---|---|---|---|",
