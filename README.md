@@ -13,6 +13,8 @@ bookhub-api-testing/
 ├── postman/
 │   ├── BookStore API.postman_collection.json
 │   └── BookStore - Dev.postman_environment.json
+├── evidence/
+│   └── screenshots/          Postman run, DEF-001 token, Allure report and CI run
 ├── automation/
 │   ├── api/                  API client for the Account and BookStore operations
 │   ├── tests/                account, bookstore and e2e tests
